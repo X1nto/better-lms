@@ -1,0 +1,20 @@
+{
+    "name": "better-lms",
+    "private": true,
+    "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite build --watch --mode chrome",
+        "build-chrome": "vite build --mode chrome",
+        "build-firefox": "vite build --mode firefox",
+        "build": "pnpm build-chrome && pnpm build-firefox",
+        "package-chrome": "pnpm build-chrome && web-ext build -s build-chrome -a package-chrome",
+        "package-firefox": "pnpm build-firefox && web-ext build -s build-firefox -a package-firefox",
+        "package": "pnpm package-chrome && pnpm package-firefox"
+    },
+    "devDependencies": {
+        "typescript": "^4.9.3",
+        "vite": "^4.1.0",
+        "web-ext": "^7.5.0"
+    }
+}

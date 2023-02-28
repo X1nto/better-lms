@@ -1,0 +1,8 @@
+.formStandard th {
+    text-align: center !important;
+}
+
+.formStandard > table > tbody > tr:hover {
+    background: unset !important;
+    color: unset !important;
+}
