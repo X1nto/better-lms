@@ -11,6 +11,7 @@ interface Lesson {
     startTime: string,
     endTime: string,
     auditory: string,
+    syllabusId: string
 }
 
 const observer = new MutationObserver(() => {
@@ -131,6 +132,7 @@ function parseTable(oldSchedule: HTMLTableElement): Map<Weekday, Lesson[]> {
         for (let i = 0; i < lessonTypes.length; i++) {
             const lessonType = lessonTypes[i];
             const tsuLessonTypeEl = lesson.children[i + 1];
+            const syllabus = lesson.children[5]
             if (!tsuLessonTypeEl.innerHTML) {
                 continue;
             }
@@ -143,7 +145,8 @@ function parseTable(oldSchedule: HTMLTableElement): Map<Weekday, Lesson[]> {
                 lector: parseDataFromElement(tsuLessonTypeData[0]),
                 startTime: parseDataFromElement(tsuLessonTypeData[2]),
                 endTime: parseDataFromElement(tsuLessonTypeData[3]),
-                auditory: parseDataFromElement(tsuLessonTypeData[4])
+                auditory: parseDataFromElement(tsuLessonTypeData[4]),
+                syllabusId: syllabus.id.split('_')[1]
             }
 
             if (weekday) {
@@ -162,7 +165,7 @@ function parseTable(oldSchedule: HTMLTableElement): Map<Weekday, Lesson[]> {
 
 function makeLessonContent(lesson: Lesson): string {
     return `
-        ${lesson.name}
+        <a onclick="OpenSyllabusPanel(${lesson.syllabusId})">${lesson.name}</a>
         <br>
         ${lesson.lector}
         <br>

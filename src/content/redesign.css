@@ -6,3 +6,12 @@
     background: unset !important;
     color: unset !important;
 }
+
+.formStandard a {
+    color: inherit !important;
+    text-decoration: underline;
+}
+
+.formStandard a:hover {
+    cursor: pointer;
+}
