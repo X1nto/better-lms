@@ -66,6 +66,11 @@ function createReferences(parent: HTMLElement | null) {
 
 function createTable(oldSchedule: HTMLTableElement, oldScheduleParent: HTMLElement | null) {
     const weekdayLessons = parseTable(oldSchedule);
+    const usedWeekdays = (() => {
+        //Only get the weekdays when the student has lectures
+        const parsedWeekdays = Array.from(weekdayLessons.keys())
+        return weekdays.filter(e => parsedWeekdays.includes(e))
+    })();
 
     document.getElementById('better-schedule')?.remove();
 
@@ -84,15 +89,15 @@ function createTable(oldSchedule: HTMLTableElement, oldScheduleParent: HTMLEleme
 
     for (let i = 0; i < largest; i++) {
         const tr = document.createElement('tr');
-        for (let j = 0; j < weekdays.length; j++) {
+        for (let j = 0; j < usedWeekdays.length; j++) {
             tr.appendChild(document.createElement('td'));
         }
 
         tableBody.appendChild(tr);
     }
 
-    for (let i = 0; i < weekdays.length; i++) {
-        const weekday = weekdays[i];
+    for (let i = 0; i < usedWeekdays.length; i++) {
+        const weekday = usedWeekdays[i];
 
         const header = document.createElement('th');
         header.innerText = weekday
@@ -101,13 +106,9 @@ function createTable(oldSchedule: HTMLTableElement, oldScheduleParent: HTMLEleme
         let lessons = weekdayLessons.get(weekday)
         if (lessons) {
             lessons.sort((a, b) => {
-                if (a.startTime < b.startTime) {
-                    return -1;
-                } else if (a.startTime > b.startTime) {
-                    return 1;
-                } else {
-                    return 0;
-                }
+                if (a.startTime < b.startTime) return -1;
+                if (a.startTime > b.startTime) return 1;
+                return 0;
             }).forEach((lesson, j) => {
                 const target = tableBody.children[j].children[i] as HTMLElement;
                 target.style.background = getColorForLessonType(lesson.type);
