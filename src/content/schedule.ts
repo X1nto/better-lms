@@ -1,7 +1,7 @@
 const lessonTypes = ["ლექცია", "ჯგუფური", "პრაქტიკული", "ლაბორატორია"] as const;
 type LessonType = typeof lessonTypes[number];
 
-const weekdays = ["ორშაბათი", "სამშაბათი", "ოთხშაბათი", "ხუთშაბათი", "პარასკევი"] as const;
+const weekdays = ["ორშაბათი", "სამშაბათი", "ოთხშაბათი", "ხუთშაბათი", "პარასკევი", "შაბათი"] as const;
 type Weekday = typeof weekdays[number];
 
 interface Lesson {
