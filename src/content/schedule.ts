@@ -17,10 +17,17 @@ interface Lesson {
 const observer = new MutationObserver(() => {
     observer.disconnect();
 
-    const oldSchedule = document.getElementById("schedule") as HTMLTableElement;
-    const oldScheduleParent = oldSchedule.parentElement;
-    createTable(oldSchedule, oldScheduleParent)
-    createReferences(oldScheduleParent)
+    const oldSchedule = document.getElementsByTagName("table")[0];
+    if (oldSchedule !== undefined) {
+        const oldScheduleParent = oldSchedule.parentElement;
+        const weekdayLessons = parseTable(oldSchedule);
+        const betterSchedule = createTable(weekdayLessons)
+        oldScheduleParent?.appendChild(betterSchedule);
+        oldSchedule.style.display = 'none';
+
+        const legend = createLegend()
+        oldScheduleParent?.appendChild(legend)
+    }
 
     connectObserver()
 })
@@ -31,11 +38,11 @@ function connectObserver() {
     observer.observe(document, {
         childList: true,
         subtree: true,
-        attributes: true,
+        attributes: false,
     })
 }
 
-function createReferences(parent: HTMLElement | null) {
+function createLegend(): HTMLElement {
     document.getElementById('schedule-reference')?.remove();
 
     const div = document.createElement('div');
@@ -61,11 +68,10 @@ function createReferences(parent: HTMLElement | null) {
         container.append(reference);
         div.appendChild(container);
     }
-    parent?.appendChild(div)
+    return div
 }
 
-function createTable(oldSchedule: HTMLTableElement, oldScheduleParent: HTMLElement | null) {
-    const weekdayLessons = parseTable(oldSchedule);
+function createTable(weekdayLessons: Map<Weekday, Lesson[]>): HTMLTableElement {
     const usedWeekdays = (() => {
         //Only get the weekdays when the student has lectures
         const parsedWeekdays = Array.from(weekdayLessons.keys())
@@ -76,6 +82,7 @@ function createTable(oldSchedule: HTMLTableElement, oldScheduleParent: HTMLEleme
 
     const table = document.createElement('table');
     table.id = 'better-schedule';
+    table.className = "table table-sm table-bordered table-responsive table-responsive-sm table-sticky"
     const tableHeader = document.createElement('thead');
     const tableHeaderTr = document.createElement('tr')
     const tableBody = document.createElement('tbody');
@@ -111,7 +118,7 @@ function createTable(oldSchedule: HTMLTableElement, oldScheduleParent: HTMLEleme
                 return 0;
             }).forEach((lesson, j) => {
                 const target = tableBody.children[j].children[i] as HTMLElement;
-                target.style.background = getColorForLessonType(lesson.type);
+                target.dataset.color = getColorForLessonType(lesson.type)
                 target.innerHTML = makeLessonContent(lesson);
             })
         }
@@ -120,34 +127,64 @@ function createTable(oldSchedule: HTMLTableElement, oldScheduleParent: HTMLEleme
     tableHeader.appendChild(tableHeaderTr);
     table.appendChild(tableHeader);
     table.appendChild(tableBody);
-    oldScheduleParent?.appendChild(table);
-    oldSchedule.style.display = 'none';
+    return table
 }
 
 //gamoylevdeba kaci amas rom dainaxavs
 function parseTable(oldSchedule: HTMLTableElement): Map<Weekday, Lesson[]> {
     const weekdayLessons: Map<Weekday, Lesson[]> = new Map();
 
+    let lessonTypes: LessonType[] = [];
+    const header = oldSchedule.tHead;
+    if (header === null) return weekdayLessons
+
+    for (let type of header.rows[0].children) {
+        switch (type.innerHTML) {
+            case "ლექცია":
+                lessonTypes.push("ლექცია");
+                break;
+            case "სამუშაო ჯგუფი":
+                lessonTypes.push("ჯგუფური");
+                break;
+            case "ლაბორატორიული":
+                lessonTypes.push("ლაბორატორია");
+                break;
+            case "პრაქტიკული":
+                lessonTypes.push("პრაქტიკული");
+                break;
+            default:
+                break;
+        }
+    }
+
     for (let lesson of oldSchedule.tBodies[0].rows) {
         const lessonName = lesson.children[0].innerHTML;
         for (let i = 0; i < lessonTypes.length; i++) {
             const lessonType = lessonTypes[i];
             const tsuLessonTypeEl = lesson.children[i + 1];
-            const syllabus = lesson.children[5]
-            if (!tsuLessonTypeEl.innerHTML) {
+            if (!tsuLessonTypeEl.innerHTML)
                 continue;
-            }
-            const tsuLessonTypeData = tsuLessonTypeEl.innerHTML.split('<br>');
 
-            const weekday = parseDataFromElement(tsuLessonTypeData[1]) as Weekday
+            if (tsuLessonTypeEl.children.length == 0)
+                continue
+
+            const tsuLessonTypeData = Array.from(tsuLessonTypeEl.children[0].children)
+                .map(e =>  (e as HTMLDivElement).innerText);
+
+            const lector = parseDataFromElement(tsuLessonTypeData[0])
+            const auditory = parseDataFromElement(tsuLessonTypeData[1])
+            const dayAndtime = parseDataFromElement(tsuLessonTypeData[2])
+            const [day, time] = dayAndtime.split(',');
+            const [startTime, endTime] = time.split('-');
+            const weekday = day as Weekday
             const lessonObject: Lesson = {
                 type: lessonType,
                 name: lessonName,
-                lector: parseDataFromElement(tsuLessonTypeData[0]),
-                startTime: parseDataFromElement(tsuLessonTypeData[2]),
-                endTime: parseDataFromElement(tsuLessonTypeData[3]),
-                auditory: parseDataFromElement(tsuLessonTypeData[4]),
-                syllabusId: syllabus.id.split('_')[1]
+                lector: lector,
+                auditory: auditory,
+                startTime: startTime,
+                endTime: endTime,
+                syllabusId: ''
             }
 
             if (weekday) {
@@ -166,7 +203,7 @@ function parseTable(oldSchedule: HTMLTableElement): Map<Weekday, Lesson[]> {
 
 function makeLessonContent(lesson: Lesson): string {
     return `
-        <a onclick="OpenSyllabusPanel(${lesson.syllabusId})">${lesson.name}</a>
+        <strong>${lesson.name}</strong>
         <br>
         ${lesson.lector}
         <br>

@@ -1,17 +1,38 @@
-.formStandard th {
+table th {
     text-align: center !important;
 }
 
-.formStandard > table > tbody > tr:hover {
+table td {
+    text-align: center !important;
+    overflow-wrap: break-word;
+}
+
+table tr, table td, table tbody tr {
     background: unset !important;
     color: unset !important;
 }
 
-.formStandard a {
+td[data-color="LightSkyBlue"] {
+    --tableBackColor: LightSkyBlue;
+}
+
+td[data-color="LemonChiffon"] {
+    --tableBackColor: LemonChiffon;
+}
+
+td[data-color="Plum"] {
+    --tableBackColor: Plum;
+}
+
+td[data-color="LightGreen"] {
+    --tableBackColor: LightGreen;
+}
+
+table a {
     color: inherit !important;
     text-decoration: underline;
 }
 
-.formStandard a:hover {
+table a:hover {
     cursor: pointer;
 }
